@@ -45,3 +45,107 @@ class DecisionTreeBase:
                     return node.value
         else:
             return node.value 
+
+# Define a decision tree class for classification     
+class DecisionTreeClassification(DecisionTreeBase):
+    # Parameters:
+    # max_depth(int, default=2): The maximum depth of the tree.
+    # min_samples_split(int, default=2): The minimum number of samples required to split an internal node
+    
+    def __init__(self, min_samples_split=2, max_depth=2):
+        super().__init__(min_samples_split=min_samples_split, max_depth=max_depth)
+    
+    # Fit the decision tree to the training data
+    def fit(self, X, y):
+        # Set the number of features and classes
+        self.n_features_ = X.shape[1]
+        self.n_classes_ = len(set(y))
+        # Build the tree recursively
+        self.tree = self._grow_tree(X, y)
+        return self
+    
+    def _gini(self, y):
+        # Calculate the Gini impurity of a set of labels
+        classes = np.unique(y)
+        n_samples = len(y)
+        gini = 1.0
+        for c in classes:
+            p = len(y[y == c]) / n_samples
+            gini -= p ** 2
+        return gini
+    
+    def _best_split(self, X, y):
+        # Find the best feature and threshold to split the data
+        m = y.size
+        if m <= self.min_samples_split:
+            return None, None
+        # Calculate the Gini impurity of the parent node
+        num_parent = [np.sum(y == c) for c in range(self.n_classes_)]
+        best_gini = 1.0 - sum((n / m) ** 2 for n in num_parent)
+        best_idx, best_thr = None, None
+        # Iterate over the features
+        for idx in range(self.n_features_):
+            # Sort the data points by the feature value
+            thresholds, classes = zip(*sorted(zip(X[:, idx], y)))
+            # Initialize the number of samples in the left and right nodes
+            num_left = [0] * self.n_classes_
+            num_right = num_parent.copy()
+            # Iterate over the data points
+            for i in range(1, m):
+                c = classes[i - 1]
+                num_left[c] += 1
+                num_right[c] -= 1
+                # Calculate the Gini impurity of the left and right nodes
+                gini_left = 1.0 - sum(
+                    (num_left[x] / i) ** 2 for x in range(self.n_classes_)
+                )
+                gini_right = 1.0 - sum(
+                    (num_right[x] / (m - i)) ** 2 for x in range(self.n_classes_)
+                )
+                # Calculate the weighted average of the Gini impurity
+                gini = (i * gini_left + (m - i) * gini_right) / m
+                # Skip duplicates
+                if thresholds[i] == thresholds[i - 1]:
+                    continue
+                # Update the best split if necessary
+                if gini < best_gini:
+                    best_gini = gini
+                    best_idx = idx
+                    best_thr = (thresholds[i] + thresholds[i - 1]) / 2
+        return best_idx, best_thr
+    
+    def _grow_tree(self, X, y, depth=0):
+        # Calculate number of samples per class
+        num_samples_per_class = [np.sum(y == i) for i in range(self.n_classes_)]
+        # Predict the class with maximum number of samples
+        predicted_class = np.argmax(num_samples_per_class)
+        # Create a node with the predicted class as its value
+        node = Node(value=predicted_class)
+
+        # Check if tree depth is less than maximum depth
+        if depth < self.max_depth:
+            # Find the best feature and threshold for splitting the data
+            idx, thr = self._best_split(X, y)
+            if idx is not None:
+                # Split the data based on the feature and threshold
+                indices_left = X[:, idx] < thr
+                X_left, y_left = X[indices_left], y[indices_left]
+                X_right, y_right = X[~indices_left], y[~indices_left]
+
+                # Check if there are samples in both the left and right child nodes
+                if len(X_left) > 0 and len(X_right) > 0:
+                    # Recursively grow the left and right child nodes
+                    child_left = self._grow_tree(X_left, y_left, depth+1)
+                    child_right = self._grow_tree(X_right, y_right, depth+1)
+                    # Set the feature index and threshold for the current node
+                    node.feature_index = idx
+                    node.threshold = thr
+                    # Set the left and right child nodes for the current node
+                    node.left = child_left
+                    node.right = child_right
+                    return node
+
+        # If the tree depth is greater than or equal to the maximum depth, or if the best split could not be found,
+        # set the current node as a leaf node
+        node.is_leaf = True
+        return node
