@@ -149,3 +149,69 @@ class DecisionTreeClassification(DecisionTreeBase):
         # set the current node as a leaf node
         node.is_leaf = True
         return node
+
+# Define a decision tree class for regression
+class DecisionTreeRegression(DecisionTreeBase):
+    # Parameters:
+    # max_depth(int, default=2): The maximum depth of the tree.
+    # min_samples_split(int, default=2): The minimum number of samples required to split an internal node
+    def __init__(self, min_samples_split=2, max_depth=2):
+        # Initialize DecisionTreeBase with min_samples_split and max_depth
+        super().__init__(min_samples_split=min_samples_split, max_depth=max_depth)
+
+    def _mse(self, y):
+        # Calculate the mean squared error of a set of target values
+        mean = np.mean(y)
+        return np.mean((y - mean) ** 2)
+
+    def _best_split(self, X, y):
+        # Find the best split for the given data and target values
+        m = y.size
+        if m <= self.min_samples_split:
+            # If the number of samples is less than or equal to min_samples_split, return None
+            return None, None
+        best_mse = np.inf
+        best_idx, best_thr = None, None
+        for idx in range(self.n_features_):
+            # Sort the feature values and target values by the feature values
+            thresholds, values = zip(*sorted(zip(X[:, idx], y)))
+            for i in range(1, m):
+                if thresholds[i] == thresholds[i - 1]:
+                    continue
+                # Calculate the mean squared error for the left and right subsets of the data
+                mse_left = self._mse(values[:i])
+                mse_right = self._mse(values[i:])
+                # Calculate the weighted mean squared error for the split
+                mse = (i * mse_left + (m - i) * mse_right) / m
+                if mse < best_mse:
+                    # If the weighted mean squared error is better than the previous best, update the best values
+                    best_mse = mse
+                    best_idx = idx
+                    best_thr = (thresholds[i] + thresholds[i - 1]) / 2
+        # Return the best feature index and threshold for the split
+        return best_idx, best_thr
+        
+    def _grow_tree(self, X, y, depth=0):
+        # Recursively grow the decision tree
+        node = Node(value=np.mean(y))
+        if depth < self.max_depth:
+            # Find the best split for the current data and target values
+            idx, thr = self._best_split(X, y)
+            if idx is not None:
+                # Split the data and target values based on the best split
+                indices_left = X[:, idx] < thr
+                X_left, y_left = X[indices_left], y[indices_left]
+                X_right, y_right = X[~indices_left], y[~indices_left]
+                if len(X_left) > 0 and len(X_right) > 0:
+                    # Recursively grow the left and right subtrees
+                    child_left = self._grow_tree(X_left, y_left, depth+1)
+                    child_right = self._grow_tree(X_right, y_right, depth+1)
+                    # Update the node with the best feature index, threshold, and left and right subtrees
+                    node.feature_index = idx
+                    node.threshold = thr
+                    node.left = child_left
+                    node.right = child_right
+                    return node
+        # If the maximum depth has been reached or the best split cannot be found, make the node a leaf node
+        node.is_leaf = True
+        return node
