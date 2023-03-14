@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decisiontree"
+version = "0.0.1"
+authors = [
+  { name="Antoine CLOUTE", email="antoine.cloute@student-cs.fr" },
+  { name="Annabelle LUO", email="annabelle.luo@student-cs.fr" },
+  { name="Ali NAJEM", email="ali.najem@student-cs.fr" },
+  { name="Xioayan HONG", email="xiaoyan.hong@student-cs.fr" },
+  { name="Karim EL HAGE", email="karim.elhage@student-cs.fr" }
+]
+description = "Decision Tree for Classification and Regression"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.packages]
+find = {}
