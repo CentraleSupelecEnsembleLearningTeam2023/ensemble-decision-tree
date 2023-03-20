@@ -6,6 +6,10 @@ A Python package for building decision trees for classification and regression t
 ## Authors
 The project is done by [Karim El Hage](https://github.com/karimelhage), [Ali Najem](https://github.com/najemali), [Annabelle Luo](https://github.com/annabelleluo), [Xiaoyan Hong](https://github.com/EmmaHongW), [Antoine Cloute](https://github.com/AntAI-Git)
 
+<a href="https://github.com/karimelhage/ensemble-decision-tree/graphs/contributors"> 
+  <img src="https://contrib.rocks/image?repo=karimelhage/ensemble-decision-tree" />
+</a>
+
 ## Download
 
 Download the package through git
