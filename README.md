@@ -3,6 +3,8 @@
 
 A Python package for building decision trees for classification and regression tasks.
 
+## Authors
+The project is done by [Karim El Hage](https://github.com/karimelhage), [Ali Najem](https://github.com/najemali), [Annabelle Luo](https://github.com/annabelleluo), [Xiaoyan Hong](https://github.com/EmmaHongW), [Antoine Cloute](https://github.com/AntAI-Git)
 
 ## Download
 
