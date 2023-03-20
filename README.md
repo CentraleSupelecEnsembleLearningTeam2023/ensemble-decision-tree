@@ -29,22 +29,27 @@ Here's an example of how to use the package to build a decision tree:
 
 ```python
 from decisiontree import DecisionTreeClassification, DecisionTreeRegression
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
 
 # Load data
-X = [[0, 0], [1, 1]]
-y = [0, 1]
+iris = load_iris()
+X, y = iris.data, iris.target
 
-# Create decision tree classifier
+# Split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+
+# Fit Model on train set
 clf = DecisionTreeClassification()
-clf.fit(X, y)
+clf.fit(X_train, y_train)
 
-# Make predictions
-y_pred = clf.predict([[2, 2], [-1, -1]])
+# Predict on test set
+y_pred = clf.predict(X_test)
 
 ```
 
 
-An example notebook is available inside the example folder.
+An example notebook with different toy datasets is available inside the example folder.
 
 
 ### Hyperparameters
